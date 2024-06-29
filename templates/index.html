@@ -12,7 +12,7 @@
     <h1>Music Genres</h1>
     <ul>
         {% for genre in genres %}
-        <li><a href="{{ url_for('play_genre', genre=genre) }}">{{ genre }}</a></li>
+        <li><a href="{{ url_for('artists', genre=genre) }}">{{ genre }}</a></li>
         {% endfor %}
     </ul>
 </body>
