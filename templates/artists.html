@@ -7,6 +7,21 @@
     <title>Artists in {{ genre }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .clickable {
+            cursor: pointer;
+        }
+
+        audio {
+            display: none;
+            /* Hide the audio element */
+        }
+
+        #player {
+            display: none;
+            /* Initially hide the player div */
+        }
+    </style>
 </head>
 
 <body>
@@ -17,46 +32,56 @@
             <input type="range" id="volume" name="volume" min="0" max="100" value="50">
         </div>
     </div>
-    <div class="artist-list">
-        {% for artist in artists %}
-        <div class="artist {{ 'major' if loop.index <= 5 else '' }}">
-            <h2>{{ artist.name }}</h2>
-            <button class="listen-btn" data-artist-id="{{ artist.id }}">Listen</button>
-        </div>
-        {% endfor %}
-    </div>
     <div id="player">
-        <audio id="audio-player" controls>
+        <audio id="audio-player">
             <source id="audio-source" src="" type="audio/mpeg">
             Your browser does not support the audio element.
         </audio>
-        <div id="spotify-link" style="display:none;">
+        <div id="spotify-link">
             <a id="external-link" href="" target="_blank">Listen on Spotify</a>
         </div>
+    </div>
+    <div class="artist-list">
+        {% for artist in artists %}
+        <div class="artist clickable {{ 'major' if loop.index <= 5 else '' }}" data-artist-id="{{ artist.id }}">
+            <h2>{{ artist.name }}</h2>
+        </div>
+        {% endfor %}
     </div>
     <a href="{{ url_for('index') }}">Back to genres</a>
 
     <script>
         $(document).ready(function () {
-            $('.listen-btn').click(function () {
+            var currentPlayingArtist = null;
+
+            $('.clickable').click(function () {
                 var artistId = $(this).data('artist-id');
-                $.get('/play/' + artistId, function (data) {
-                    if (data.track) {
-                        if (data.track.preview_url) {
-                            $('#spotify-link').hide();
-                            $('#audio-player').show();
-                            $('#audio-source').attr('src', data.track.preview_url);
-                            $('#audio-player')[0].load();
-                            $('#audio-player')[0].play();
+                if (currentPlayingArtist === artistId) {
+                    $('#audio-player')[0].pause();
+                    $('#player').hide();
+                    currentPlayingArtist = null;
+                } else {
+                    $.get('/play/' + artistId, function (data) {
+                        if (data.track) {
+                            if (data.track.preview_url) {
+                                $('#spotify-link').hide();
+                                $('#audio-source').attr('src', data.track.preview_url);
+                                $('#audio-player')[0].load();
+                                $('#audio-player')[0].play();
+                                $('#player').show();
+                                currentPlayingArtist = artistId;
+                            } else {
+                                $('#audio-player').hide();
+                                $('#spotify-link').show();
+                                $('#external-link').attr('href', data.track.external_url);
+                                $('#player').show();
+                                currentPlayingArtist = artistId;
+                            }
                         } else {
-                            $('#audio-player').hide();
-                            $('#spotify-link').show();
-                            $('#external-link').attr('href', data.track.external_url);
+                            alert("No tracks found for this artist.");
                         }
-                    } else {
-                        alert("No tracks found for this artist.");
-                    }
-                });
+                    });
+                }
             });
 
             $('#volume').on('input', function () {
