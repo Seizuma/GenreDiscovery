@@ -1,3 +1,4 @@
+/* static/styles.css */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -5,10 +6,21 @@ body {
     text-align: center;
 }
 
-h1 {
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
     background-color: #333;
     color: #fff;
-    padding: 20px;
+}
+
+h1 {
+    margin: 0;
+}
+
+.volume-control {
+    margin-right: 20px;
 }
 
 ul {
@@ -27,4 +39,57 @@ a {
 
 a:hover {
     text-decoration: underline;
+}
+
+.artist-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px;
+}
+
+.artist {
+    margin: 10px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    width: 200px;
+    text-align: center;
+}
+
+.artist.major {
+    background-color: #f0f0f0;
+    border: 2px solid #000;
+}
+
+.artist h2 {
+    font-size: 1.2em;
+    margin: 10px 0;
+}
+
+.artist button {
+    display: block;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+.artist button:hover {
+    background-color: #0056b3;
+}
+
+#player {
+    margin-top: 20px;
+}
+
+@media (max-width: 600px) {
+    .artist {
+        width: 100%;
+    }
+
+    .header {
+        flex-direction: column;
+    }
 }
