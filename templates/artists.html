@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artists in {{ genre }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Popular Artists in {{ genre }}</h1>
+        <div class="volume-control">
+            <label for="volume">Volume:</label>
+            <input type="range" id="volume" name="volume" min="0" max="100" value="50">
+        </div>
+    </div>
+    <div class="artist-list">
+        {% for artist in artists %}
+        <div class="artist {{ 'major' if loop.index <= 5 else '' }}">
+            <h2>{{ artist.name }}</h2>
+            <button class="listen-btn" data-artist-id="{{ artist.id }}">Listen</button>
+        </div>
+        {% endfor %}
+    </div>
+    <div id="player">
+        <audio id="audio-player" controls>
+            <source id="audio-source" src="" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+    <a href="{{ url_for('index') }}">Back to genres</a>
+
+    <script>
+        $(document).ready(function () {
+            $('.listen-btn').click(function () {
+                var artistId = $(this).data('artist-id');
+                $.get('/play/' + artistId, function (data) {
+                    if (data.track) {
+                        $('#audio-source').attr('src', data.track.preview_url);
+                        $('#audio-player')[0].load();
+                        $('#audio-player')[0].play();
+                    } else {
+                        alert("No tracks found for this artist.");
+                    }
+                });
+            });
+
+            $('#volume').on('input', function () {
+                var volume = $(this).val();
+                $('#audio-player')[0].volume = volume / 100;
+            });
+        });
+    </script>
+</body>
+
+</html>
