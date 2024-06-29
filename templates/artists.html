@@ -30,6 +30,9 @@
             <source id="audio-source" src="" type="audio/mpeg">
             Your browser does not support the audio element.
         </audio>
+        <div id="spotify-link" style="display:none;">
+            <a id="external-link" href="" target="_blank">Listen on Spotify</a>
+        </div>
     </div>
     <a href="{{ url_for('index') }}">Back to genres</a>
 
@@ -39,9 +42,17 @@
                 var artistId = $(this).data('artist-id');
                 $.get('/play/' + artistId, function (data) {
                     if (data.track) {
-                        $('#audio-source').attr('src', data.track.preview_url);
-                        $('#audio-player')[0].load();
-                        $('#audio-player')[0].play();
+                        if (data.track.preview_url) {
+                            $('#spotify-link').hide();
+                            $('#audio-player').show();
+                            $('#audio-source').attr('src', data.track.preview_url);
+                            $('#audio-player')[0].load();
+                            $('#audio-player')[0].play();
+                        } else {
+                            $('#audio-player').hide();
+                            $('#spotify-link').show();
+                            $('#external-link').attr('href', data.track.external_url);
+                        }
                     } else {
                         alert("No tracks found for this artist.");
                     }

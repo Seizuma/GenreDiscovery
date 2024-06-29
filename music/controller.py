@@ -2,7 +2,6 @@
 from flask import Flask, render_template, jsonify
 from music.service import MusicService
 import logging
-import os
 
 class MusicController:
     def __init__(self):
@@ -37,7 +36,10 @@ class MusicController:
         try:
             track = self.music_service.get_track_by_artist(artist_id)
             if track:
-                return jsonify(track={"preview_url": track['preview_url']})
+                return jsonify(track={
+                    "preview_url": track.get('preview_url'),
+                    "external_url": track['external_urls']['spotify']
+                })
             else:
                 return jsonify(error="No tracks found for artist: " + artist_id)
         except Exception as e:

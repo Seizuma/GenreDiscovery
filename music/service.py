@@ -15,7 +15,6 @@ class MusicService:
         return self.sp.recommendation_genre_seeds()['genres']
 
     def get_artists_by_genre(self, genre):
-        # Recherche de playlists par genre
         results = self.sp.search(q=f'{genre}', type='playlist', limit=1)
         if results['playlists']['items']:
             playlist_id = results['playlists']['items'][0]['id']
@@ -26,7 +25,6 @@ class MusicService:
                 if track:
                     for artist in track['artists']:
                         artist_ids.append(artist['id'])
-            # Suppression des doublons et limitation à 20 artistes
             artist_ids = list(set(artist_ids))[:20]
             artists = [self.sp.artist(artist_id) for artist_id in artist_ids]
             return artists
@@ -35,5 +33,8 @@ class MusicService:
     def get_track_by_artist(self, artist_id):
         results = self.sp.artist_top_tracks(artist_id)
         if results['tracks']:
-            return results['tracks'][0]
+            for track in results['tracks']:
+                if track['preview_url']:
+                    return track
+            return results['tracks'][0] if results['tracks'] else None
         return None
