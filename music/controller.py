@@ -1,5 +1,5 @@
 # music/controller.py
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from music.service import MusicService
 import logging
 
@@ -8,7 +8,25 @@ class MusicController:
         self.app = Flask(__name__, static_folder='../static', template_folder='../templates')
         self.music_service = MusicService()
         self.setup_routes()
-        logging.basicConfig(level=logging.DEBUG)
+
+        # Empty the log file
+        open('app.log', 'w').close()
+
+        # Set up logging to file
+        logging.basicConfig(
+            level=logging.INFO,  # Change DEBUG to INFO to reduce logging
+            format='%(asctime)s %(levelname)s %(message)s',
+            handlers=[
+                logging.FileHandler("app.log"),
+                logging.StreamHandler()
+            ]
+        )
+
+        # Configure logging for spotipy and urllib3
+        logging.getLogger('spotipy').setLevel(logging.WARNING)  # Change to WARNING to reduce logging
+        logging.getLogger('urllib3').setLevel(logging.WARNING)  # Change to WARNING to reduce logging
+        logging.getLogger('spotipy').addHandler(logging.FileHandler("app.log"))
+        logging.getLogger('urllib3').addHandler(logging.FileHandler("app.log"))
 
     def setup_routes(self):
         self.app.add_url_rule('/', 'index', self.index)
@@ -18,7 +36,7 @@ class MusicController:
     def index(self):
         try:
             genres = self.music_service.get_genres()
-            logging.debug(f"Genres: {genres}")
+            logging.info(f"Genres: {genres}")
             return render_template('index.html', genres=genres)
         except Exception as e:
             logging.error(f"Error rendering index: {e}")

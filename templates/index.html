@@ -10,11 +10,36 @@
 
 <body>
     <h1>Music Genres</h1>
-    <ul>
+    <ul id="genre-list">
         {% for genre in genres %}
         <li><a href="{{ url_for('artists', genre=genre) }}">{{ genre }}</a></li>
         {% endfor %}
     </ul>
+    <button id="load-more-btn">Load More</button>
+
+    <script>
+        let offset = 20;
+        document.getElementById('load-more-btn').addEventListener('click', function () {
+            fetch(`/load_more_genres?offset=${offset}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.genres) {
+                        const genreList = document.getElementById('genre-list');
+                        data.genres.forEach(genre => {
+                            const li = document.createElement('li');
+                            const a = document.createElement('a');
+                            a.href = `/artists/${genre}`;
+                            a.textContent = genre;
+                            li.appendChild(a);
+                            genreList.appendChild(li);
+                        });
+                        offset += 20;
+                    } else if (data.error) {
+                        alert(data.error);
+                    }
+                });
+        });
+    </script>
 </body>
 
 </html>
