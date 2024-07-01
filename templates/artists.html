@@ -7,21 +7,6 @@
     <title>Artists in {{ genre }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        .clickable {
-            cursor: pointer;
-        }
-
-        audio {
-            display: none;
-            /* Hide the audio element */
-        }
-
-        #player {
-            display: none;
-            /* Initially hide the player div */
-        }
-    </style>
 </head>
 
 <body>
@@ -33,7 +18,7 @@
         </div>
     </div>
     <div id="player">
-        <audio id="audio-player">
+        <audio id="audio-player" controls>
             <source id="audio-source" src="" type="audio/mpeg">
             Your browser does not support the audio element.
         </audio>
@@ -45,6 +30,9 @@
         {% for artist in artists %}
         <div class="artist clickable {{ 'major' if loop.index <= 5 else '' }}" data-artist-id="{{ artist.id }}">
             <h2>{{ artist.name }}</h2>
+            {% if not artist.preview_url %}
+            <div class="no-preview-message">No preview available. Click to listen on Spotify.</div>
+            {% endif %}
         </div>
         {% endfor %}
     </div>
@@ -73,9 +61,11 @@
                             } else {
                                 $('#audio-player').hide();
                                 $('#spotify-link').show();
-                                $('#external-link').attr('href', data.track.external_url);
+                                $('#external-link').attr('href', data.track.external_urls.spotify);
                                 $('#player').show();
                                 currentPlayingArtist = artistId;
+                                $('.clickable[data-artist-id="' + artistId + '"] .no-preview-message').show();
+                                $('.clickable[data-artist-id="' + artistId + '"]').addClass('no-preview');
                             }
                         } else {
                             alert("No tracks found for this artist.");

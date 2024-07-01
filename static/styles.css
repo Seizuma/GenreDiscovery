@@ -58,6 +58,31 @@ h1 {
     background-color: #e0e0e0;
 }
 
+.clickable {
+    cursor: pointer;
+}
+
+audio {
+    display: none;
+    /* Hide the audio element */
+}
+
+#player {
+    display: none;
+    /* Initially hide the player div */
+}
+
+.no-preview {
+    background-color: #f0f0f0;
+    color: grey;
+    border: 2px solid grey;
+}
+
+.no-preview-message {
+    font-size: 0.8em;
+    color: grey;
+}
+
 #player {
     position: fixed;
     top: 50px;
@@ -86,4 +111,58 @@ h1 {
     .header {
         flex-direction: column;
     }
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.search-bar {
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.genre-section {
+    margin-bottom: 40px;
+}
+
+.genre-section h2 {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.genre-card {
+    background-color: #f0f0f0;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.genre-card:hover {
+    transform: scale(1.05);
+    background-color: #ddd;
+}
+
+.genre-card a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
 }

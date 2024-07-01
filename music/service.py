@@ -88,11 +88,19 @@ class MusicService:
         limit = 20
 
         try:
-            results = self.sp.search(q=f'genre:"{genre}"', type='artist', limit=limit, offset=offset)
-            for artist in results['artists']['items']:
-                artist_info = self.sp.artist(artist['id'])
-                if genre in artist_info['genres']:
-                    artists.append(artist_info)
+            while offset < 20:
+                results = self.sp.search(q=f'genre:"{genre}"', type='artist', limit=limit, offset=offset)
+                for artist in results['artists']['items']:
+                    artist_info = self.sp.artist(artist['id'])
+                    top_track = self.get_track_by_artist(artist['id'])
+                    artist_data = {
+                        'id': artist_info['id'],
+                        'name': artist_info['name'],
+                        'preview_url': top_track['preview_url'] if top_track else None,
+                        'external_urls': top_track['external_urls'] if top_track else None,
+                    }
+                    artists.append(artist_data)
+                offset += limit
 
         except spotipy.SpotifyException as e:
             logging.error(f"SpotifyException: {e}")
@@ -107,6 +115,13 @@ class MusicService:
         try:
             results = self.sp.artist_top_tracks(artist_id)
             if results['tracks']:
+                for track in results['tracks']:
+                    # Check if the track is primarily by the artist
+                    if track['preview_url'] and artist_id in [artist['id'] for artist in track['artists'] if artist['id'] == artist_id]:
+                        logging.info(f"Track with preview found: {track['name']}")
+                        return track
+
+                # If no primary track with preview, return the first track
                 for track in results['tracks']:
                     if track['preview_url']:
                         logging.info(f"Track with preview found: {track['name']}")

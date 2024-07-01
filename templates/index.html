@@ -1,45 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music Genres</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Genre Discovery</title>
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
-
 <body>
-    <h1>Music Genres</h1>
-    <ul id="genre-list">
-        {% for genre in genres %}
-        <li><a href="{{ url_for('artists', genre=genre) }}">{{ genre }}</a></li>
-        {% endfor %}
-    </ul>
-    <button id="load-more-btn">Load More</button>
-
+    <header>
+        <h1>Genre Discovery</h1>
+        <input type="text" id="searchBar" class="search-bar" placeholder="Search genres...">
+    </header>
+    <div class="container">
+        <div id="genreSections">
+            <div class="grid" id="genreGrid">
+                {% for genre in genres %}
+                <div class="genre-card" onclick="window.location.href='/artists/{{ genre }}'">
+                    <span>{{ genre }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
     <script>
-        let offset = 20;
-        document.getElementById('load-more-btn').addEventListener('click', function () {
-            fetch(`/load_more_genres?offset=${offset}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.genres) {
-                        const genreList = document.getElementById('genre-list');
-                        data.genres.forEach(genre => {
-                            const li = document.createElement('li');
-                            const a = document.createElement('a');
-                            a.href = `/artists/${genre}`;
-                            a.textContent = genre;
-                            li.appendChild(a);
-                            genreList.appendChild(li);
-                        });
-                        offset += 20;
-                    } else if (data.error) {
-                        alert(data.error);
-                    }
-                });
+        const searchBar = document.getElementById('searchBar');
+        const genreGrid = document.getElementById('genreGrid');
+        const genres = Array.from(genreGrid.children);
+
+        searchBar.addEventListener('input', () => {
+            const query = searchBar.value.toLowerCase();
+            genres.forEach(genre => {
+                genre.style.display = genre.textContent.toLowerCase().includes(query) ? '' : 'none';
+            });
         });
     </script>
 </body>
-
 </html>
