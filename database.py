@@ -1,21 +1,21 @@
-from sqlalchemy import create_engine, Column, String, Integer
+# database.py
+from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 
-# Database configuration
-DATABASE_URL = "sqlite:///./genres.db"
-
-# Set up the database engine and session
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# Define the Genre model
 class Genre(Base):
-    __tablename__ = "genres"
+    __tablename__ = 'genres'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, nullable=False)
+    artists = relationship('Artist', back_populates='genre')
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, index=True)
-
-# Create the genres table
-Base.metadata.create_all(bind=engine)
+class Artist(Base):
+    __tablename__ = 'artists'
+    id = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    genre_id = Column(Integer, ForeignKey('genres.id'))
+    preview_url = Column(String)
+    external_urls = Column(String)
+    genre = relationship('Genre', back_populates='artists')

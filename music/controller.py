@@ -1,8 +1,7 @@
-# music/controller.py
+# controller.py
 from flask import Flask, render_template, jsonify
 from music.service import MusicService
 import logging
-import os
 
 class MusicController:
     def __init__(self):
