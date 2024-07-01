@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +7,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
-
 <body>
     <div class="header">
         <h1>Popular Artists in {{ genre }}</h1>
@@ -18,7 +16,7 @@
         </div>
         <a href="{{ url_for('index') }}" class="back-link">Back to genres</a>
     </div>
-    <div id="player">
+    <div id="player" style="display:none;">
         <audio id="audio-player" controls>
             <source id="audio-source" src="" type="audio/mpeg">
             Your browser does not support the audio element.
@@ -37,7 +35,6 @@
         </div>
         {% endfor %}
     </div>
-
     <script>
         $(document).ready(function () {
             var currentPlayingArtist = null;
@@ -55,7 +52,7 @@
                                 $('#audio-source').attr('src', data.track.preview_url);
                                 $('#audio-player')[0].load();
                                 $('#audio-player')[0].play();
-                                $('#player').show();
+                                // $('#player').show();
                                 currentPlayingArtist = artistId;
                             } else {
                                 window.open(data.track.external_urls.spotify, '_blank');
@@ -74,5 +71,4 @@
         });
     </script>
 </body>
-
 </html>
