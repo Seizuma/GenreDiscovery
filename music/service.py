@@ -2,9 +2,10 @@
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from config import SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET
+from sqlalchemy.orm import Session
+from database import SessionLocal, Genre
 import logging
 import time
-from cachetools import TTLCache
 
 class MusicService:
     def __init__(self):
@@ -15,14 +16,18 @@ class MusicService:
         self.sp = spotipy.Spotify(client_credentials_manager=self.client_credentials_manager)
         logging.info("Spotify client initialized")
 
-        # Set up a cache with a TTL of 1 hour
-        self.genre_cache = TTLCache(maxsize=1, ttl=3600)
-        self.artist_cache = TTLCache(maxsize=100, ttl=3600)
+        # Initialize the database session
+        self.db: Session = SessionLocal()
 
-        # Preload genres into cache
+        # Preload genres into the database if empty
         self.load_genres()
 
     def load_genres(self):
+        """Load genres into the database if not already present."""
+        if self.db.query(Genre).count() > 0:
+            logging.info("Genres already loaded in the database")
+            return
+
         logging.info("Fetching available genre seeds")
         genres = set()
 
@@ -64,35 +69,40 @@ class MusicService:
             logging.error(f"SpotifyException: {e}")
             time.sleep(60)  # Wait for a minute if rate limited
 
-        self.genre_cache['genres'] = list(genres)
-        logging.info(f"Total genres found: {genres}")
+        # Store genres in the database
+        for genre_name in genres:
+            genre = Genre(name=genre_name)
+            self.db.add(genre)
+        self.db.commit()
+        logging.info(f"Total genres stored in the database: {len(genres)}")
 
     def get_genres(self):
-        return self.genre_cache.get('genres', [])
+        """Retrieve all genres from the database."""
+        return [genre.name for genre in self.db.query(Genre).all()]
 
     def get_artists_by_genre(self, genre):
+        """Fetch artists by genre from Spotify."""
         logging.info(f"Fetching artists for genre: {genre}")
         artists = []
         offset = 0
         limit = 20
 
-        while True:
-            try:
-                results = self.sp.search(q=f'genre:{genre}', type='artist', limit=limit, offset=offset)
-                artist_ids = [artist['id'] for artist in results['artists']['items']]
-                artists.extend([self.sp.artist(artist_id) for artist_id in artist_ids])
+        try:
+            results = self.sp.search(q=f'genre:"{genre}"', type='artist', limit=limit, offset=offset)
+            for artist in results['artists']['items']:
+                artist_info = self.sp.artist(artist['id'])
+                if genre in artist_info['genres']:
+                    artists.append(artist_info)
 
-                offset += limit
-                if len(results['artists']['items']) < limit:
-                    break
-            except spotipy.SpotifyException as e:
-                logging.error(f"SpotifyException: {e}")
-                time.sleep(60)  # Wait for a minute if rate limited
+        except spotipy.SpotifyException as e:
+            logging.error(f"SpotifyException: {e}")
+            time.sleep(60)  # Wait for a minute if rate limited
 
         logging.info(f"Artists found for genre {genre}: {artists}")
         return artists
 
     def get_track_by_artist(self, artist_id):
+        """Fetch top tracks by artist from Spotify."""
         logging.info(f"Fetching top tracks for artist: {artist_id}")
         try:
             results = self.sp.artist_top_tracks(artist_id)
