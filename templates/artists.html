@@ -16,27 +16,27 @@
             <label for="volume">Volume:</label>
             <input type="range" id="volume" name="volume" min="0" max="100" value="50">
         </div>
+        <a href="{{ url_for('index') }}" class="back-link">Back to genres</a>
     </div>
     <div id="player">
         <audio id="audio-player" controls>
             <source id="audio-source" src="" type="audio/mpeg">
             Your browser does not support the audio element.
         </audio>
-        <div id="spotify-link">
-            <a id="external-link" href="" target="_blank">Listen on Spotify</a>
-        </div>
     </div>
     <div class="artist-list">
         {% for artist in artists %}
-        <div class="artist clickable {{ 'major' if loop.index <= 5 else '' }}" data-artist-id="{{ artist.id }}">
+        <div class="artist clickable {{ 'major' if loop.index <= 5 else '' }} {{ 'no-preview' if not artist.preview_url }}"
+            data-artist-id="{{ artist.id }}">
             <h2>{{ artist.name }}</h2>
             {% if not artist.preview_url %}
-            <div class="no-preview-message">No preview available. Click to listen on Spotify.</div>
+            <div class="no-preview-message">
+                No preview available. <a href="{{ artist.external_urls.spotify }}" target="_blank">Listen on Spotify</a>
+            </div>
             {% endif %}
         </div>
         {% endfor %}
     </div>
-    <a href="{{ url_for('index') }}">Back to genres</a>
 
     <script>
         $(document).ready(function () {
@@ -52,20 +52,13 @@
                     $.get('/play/' + artistId, function (data) {
                         if (data.track) {
                             if (data.track.preview_url) {
-                                $('#spotify-link').hide();
                                 $('#audio-source').attr('src', data.track.preview_url);
                                 $('#audio-player')[0].load();
                                 $('#audio-player')[0].play();
                                 $('#player').show();
                                 currentPlayingArtist = artistId;
                             } else {
-                                $('#audio-player').hide();
-                                $('#spotify-link').show();
-                                $('#external-link').attr('href', data.track.external_urls.spotify);
-                                $('#player').show();
-                                currentPlayingArtist = artistId;
-                                $('.clickable[data-artist-id="' + artistId + '"] .no-preview-message').show();
-                                $('.clickable[data-artist-id="' + artistId + '"]').addClass('no-preview');
+                                window.open(data.track.external_urls.spotify, '_blank');
                             }
                         } else {
                             alert("No tracks found for this artist.");
