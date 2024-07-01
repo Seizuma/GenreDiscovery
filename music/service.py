@@ -87,50 +87,64 @@ class MusicService:
         offset = 0
         limit = 20
 
-        try:
-            while offset < 20:
+        while offset < 20:
+            try:
                 results = self.sp.search(q=f'genre:"{genre}"', type='artist', limit=limit, offset=offset)
                 for artist in results['artists']['items']:
                     artist_info = self.sp.artist(artist['id'])
-                    top_track = self.get_track_by_artist(artist['id'])
-                    artist_data = {
-                        'id': artist_info['id'],
-                        'name': artist_info['name'],
-                        'preview_url': top_track['preview_url'] if top_track else None,
-                        'external_urls': top_track['external_urls'] if top_track else None,
-                    }
-                    artists.append(artist_data)
+                    top_track = self.get_track_by_artist_and_genre(artist['id'], genre)
+                    if top_track:  # Ensure a valid track is found
+                        artist_data = {
+                            'id': artist_info['id'],
+                            'name': artist_info['name'],
+                            'preview_url': top_track['preview_url'] if top_track else None,
+                            'external_urls': top_track['external_urls'] if top_track else None,
+                        }
+                        artists.append(artist_data)
+                        logging.info(f"Artist {artist_info['name']} with top track: {top_track}")
                 offset += limit
 
-        except spotipy.SpotifyException as e:
-            logging.error(f"SpotifyException: {e}")
-            time.sleep(60)  # Wait for a minute if rate limited
+
+            except spotipy.SpotifyException as e:
+                if e.http_status == 429:
+                    retry_after = int(e.headers.get('Retry-After', 60))
+                    logging.error(f"Rate limited. Retrying after {retry_after} seconds")
+                    time.sleep(retry_after)
+                else:
+                    logging.error(f"SpotifyException: {e}")
+                    break
 
         logging.info(f"Artists found for genre {genre}: {artists}")
         return artists
 
-    def get_track_by_artist(self, artist_id):
-        """Fetch top tracks by artist from Spotify."""
+    def get_track_by_artist_and_genre(self, artist_id, genre):
+        """Fetch top tracks by artist from Spotify and ensure it belongs to the specified genre."""
         logging.info(f"Fetching top tracks for artist: {artist_id}")
         try:
             results = self.sp.artist_top_tracks(artist_id)
             if results['tracks']:
                 for track in results['tracks']:
-                    # Check if the track is primarily by the artist
-                    if track['preview_url'] and artist_id in [artist['id'] for artist in track['artists'] if artist['id'] == artist_id]:
-                        logging.info(f"Track with preview found: {track['name']}")
-                        return track
+                    if track['preview_url']:
+                        album_info = self.sp.album(track['album']['id'])
+                        track_genres = album_info.get('genres', [])
+                        logging.info(f"Track {track['name']} genres: {track_genres}")
+                        if genre in track_genres:
+                            logging.info(f"Track with matching genre found: {track['name']}")
+                            return track
 
-                # If no primary track with preview, return the first track
                 for track in results['tracks']:
                     if track['preview_url']:
                         logging.info(f"Track with preview found: {track['name']}")
                         return track
+
                 logging.info("No track with preview found, returning first track")
                 return results['tracks'][0] if results['tracks'] else None
             logging.info("No tracks found for artist")
             return None
         except spotipy.SpotifyException as e:
             logging.error(f"SpotifyException: {e}")
-            time.sleep(60)  # Wait for a minute if rate limited
+            if e.http_status == 429:
+                retry_after = int(e.headers.get('Retry-After', 60))
+                logging.error(f"Rate limited. Retrying after {retry_after} seconds")
+                time.sleep(retry_after)
             return None

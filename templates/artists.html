@@ -35,6 +35,7 @@
         </div>
         {% endfor %}
     </div>
+
     <script>
         $(document).ready(function () {
             var currentPlayingArtist = null;
@@ -49,10 +50,10 @@
                     $.get('/play/' + artistId, function (data) {
                         if (data.track) {
                             if (data.track.preview_url) {
+                                $('#spotify-link').hide();
                                 $('#audio-source').attr('src', data.track.preview_url);
                                 $('#audio-player')[0].load();
                                 $('#audio-player')[0].play();
-                                // $('#player').show();
                                 currentPlayingArtist = artistId;
                             } else {
                                 window.open(data.track.external_urls.spotify, '_blank');
@@ -60,6 +61,8 @@
                         } else {
                             alert("No tracks found for this artist.");
                         }
+                    }).fail(function () {
+                        console.error("Failed to fetch track for artist: " + artistId);
                     });
                 }
             });
