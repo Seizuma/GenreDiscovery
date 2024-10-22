@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ genre|capitalize }}{% endblock %}
+
+{% block body %}
+<h1 class="my-4">{{ genre|capitalize }}</h1>
+
+
+
+<h2 class="mt-5">Artistes populaires dans {{ genre|capitalize }}</h2>
+<div class="row">
+    {% for artist in artists %}
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <img src="{{ artist.image[2]['#text'] ?: 'https://via.placeholder.com/150' }}" class="card-img-top" alt="{{ artist.name }}">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ artist.name }}</h5>
+                    <!-- Modification : Encodage URL du nom de l'artiste -->
+                    <a href="{{ path('artist_tracks', {'artist': artist.name|url_encode }) }}" class="btn btn-primary">Voir les titres</a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <p>Aucun artiste trouvé.</p>
+    {% endfor %}
+</div>
+
+<h2>Sous-genres associés</h2>
+<div class="row">
+    {% for tag in similarTags %}
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ tag.name|capitalize }}</h5>
+                    <a href="{{ path('genre_details', {'genre': tag.name}) }}" class="btn btn-secondary">Explorer</a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <p>Aucun sous-genre trouvé.</p>
+    {% endfor %}
+</div>
+{% endblock %}

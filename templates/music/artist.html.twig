@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Titres de {{ artist }}{% endblock %}
+
+{% block body %}
+<h1 class="my-4">Titres de {{ artist }}</h1>
+
+<div class="list-group">
+    {% for track in tracks %}
+        <div class="list-group-item">
+            <h5 class="mb-1">{{ track.name }}</h5>
+            <small class="text-muted">Écoutes : {{ track.playcount }}</small>
+            <div class="mt-2">
+                <a href="{{ track.url }}" target="_blank" class="btn btn-outline-primary">Écouter sur Last.fm</a>
+            </div>
+        </div>
+    {% else %}
+        <p>Aucun titre trouvé.</p>
+    {% endfor %}
+</div>
+{% endblock %}

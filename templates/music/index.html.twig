@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Découverte des Genres Musicaux{% endblock %}
+
+{% block body %}
+<h1 class="my-4">Découverte des Nouveaux Genres Musicaux</h1>
+
+<div class="row">
+    {% for genre in genres %}
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ genre.name|capitalize }}</h5>
+                    <a href="{{ path('genre_details', {'genre': genre.name|url_encode}) }}" class="btn btn-primary">Explorer</a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <p>Aucun genre trouvé.</p>
+    {% endfor %}
+</div>
+{% endblock %}
