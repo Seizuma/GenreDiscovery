@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Découverte des Genres Musicaux{% endblock %}
+
+{% block body %}
+<h1>Découverte des Nouveaux Genres Musicaux</h1>
+
+<ul>
+    {% for genre in genres %}
+        <li>{{ genre.name }}</li>
+    {% else %}
+        <li>Aucun genre trouvé.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
